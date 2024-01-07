@@ -33,8 +33,9 @@ Proje kullanımı için aşağıdaki adımları takip edebilirsiniz:
 
 1. Proje dosyalarını bilgisayarınıza indirin.
 2. Gerekli bağımlılıkları yüklemek için terminal veya komut istemcisinde `dotnet restore` komutunu çalıştırın.
-3. Proje ana dizininde `dotnet run` komutu ile uygulamayı başlatın.
-4. Tarayıcıdan `http://localhost:5000` adresine giderek API'ye erişim sağlayabilirsiniz.
+3. Proje ana dizininde `dotnet run` komutu ile uygulamayı başlatın
+4. Database bağlantısı için migration eklemelisiniz.  `add-migration "CreateDb` ->  `update-database` komutlarınını çalıştırın.
+5. Tarayıcıdan `http://localhost:5000` adresine giderek API'ye erişim sağlayabilirsiniz.
 
 ## Testler
 
