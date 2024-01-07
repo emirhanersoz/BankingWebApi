@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "xKCw70UC5yxhfQZ/4GG8ErnGJUZCh8ubI7GG42GdIVg=",
+  "Source": "DigitalBankApi",
+  "BasePath": "_content/DigitalBankApi",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
