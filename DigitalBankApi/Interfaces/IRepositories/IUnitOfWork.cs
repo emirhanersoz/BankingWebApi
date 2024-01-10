@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
+﻿using DigitalBankApi.Data;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace DigitalBankApi.Interfaces.IRepositories
 {

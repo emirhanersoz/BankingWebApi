@@ -34,7 +34,6 @@ namespace DigitalBankApi.Repositories
         public IPayeeRepository Payees { get; private set; }
         public ISupportRequestRepository SupportRequests { get; private set; }
         public IUserRepository Users { get; private set; }
-        public AdminDbContext Object { get; set; }
 
         public async Task<int> CompleteAsync()
         {

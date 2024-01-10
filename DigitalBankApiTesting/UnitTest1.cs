@@ -5,7 +5,6 @@ namespace DigitalBankApiTesting
         [Fact]
         public void Test1()
         {
-
         }
     }
 }
