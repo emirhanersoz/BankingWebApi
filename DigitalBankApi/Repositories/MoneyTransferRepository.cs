@@ -6,11 +6,11 @@ namespace DigitalBankApi.Repositories
 {
     public class MoneyTransferRepository : Repository<MoneyTransfers>, IMoneyTransferRepository
     {
-        public MoneyTransferRepository(AdminContext context) : base(context) { }
+        public MoneyTransferRepository(AdminDbContext context) : base(context) { }
 
-        public AdminContext AdminContext
+        public AdminDbContext AdminContext
         {
-            get { return Context as AdminContext; }
+            get { return Context as AdminDbContext; }
         }
     }
 }

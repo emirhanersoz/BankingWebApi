@@ -15,31 +15,31 @@ namespace DigitalBankApi.Services
         private readonly IMapper _mapper;
         private readonly IValidator<SupportRequestDto> _validator;
 
-        public SupportRequestService(AdminContext context, IMapper mapper, IValidator<SupportRequestDto> validator)
+        public SupportRequestService(AdminDbContext context, IMapper mapper, IValidator<SupportRequestDto> validator)
         {
             _unitOfWork = new UnitOfWork(context);
             _mapper = mapper;
             _validator = validator;
         }
 
-        public async Task<SupportRequestDto> Create(SupportRequestDto supportRequestDto)
+        public async Task<SupportRequestDto> Create(SupportRequestDto supportRequest)
         {
-            var result = _validator.Validate(supportRequestDto);
+            var supportRequestValid = _validator.Validate(supportRequest);
 
-            if (!result.IsValid)
+            if (!supportRequestValid.IsValid)
             {
-                var errorMessages = result.Errors
+                var errorMessages = supportRequestValid.Errors
                     .Select(error => $"{error.PropertyName}: {error.ErrorMessage}").ToList();
 
                 throw new Exception(string.Join(Environment.NewLine, errorMessages));
             }
 
-            var entity = _mapper.Map<SupportRequestDto, SupportRequests>(supportRequestDto);
+            var entity = _mapper.Map<SupportRequestDto, SupportRequests>(supportRequest);
 
             await _unitOfWork.SupportRequests.AddAsync(entity);
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<SupportRequestDto>(supportRequestDto);
+            return _mapper.Map<SupportRequestDto>(supportRequest);
         }
 
         public async Task<List<SupportRequestDto>> ListCustomerSupportRequest(int customerId)
@@ -87,6 +87,9 @@ namespace DigitalBankApi.Services
 
         public async Task<AnswerRequestDto> AnswerRequest(int id, string answer)
         {
+            if (answer == null)
+                throw new ArgumentNullException(nameof(answer));
+
             var supportRequest = await _unitOfWork.SupportRequests.GetAsync(id);
 
             if (supportRequest != null)

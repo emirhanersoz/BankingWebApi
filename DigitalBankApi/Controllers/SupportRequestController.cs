@@ -1,7 +1,6 @@
 ﻿using DigitalBankApi.DTOs;
 using DigitalBankApi.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.SecurityTokenService;
 
@@ -20,11 +19,11 @@ namespace DigitalBankApi.Controllers
 
         [HttpPost, Authorize(Roles = "Admin,Employee,HighLevelUser,User")]
         [Route("create")]
-        public async Task<IActionResult> Create([FromBody] SupportRequestDto supportRequestDto)
+        public async Task<IActionResult> Create([FromBody] SupportRequestDto supportRequest)
         {
             try
             {
-                var createdSupportRequest = await _supportRequestService.Create(supportRequestDto);
+                var createdSupportRequest = await _supportRequestService.Create(supportRequest);
                 return Ok(createdSupportRequest);
             }
 
@@ -40,10 +39,11 @@ namespace DigitalBankApi.Controllers
         {
             try
             {
-                var supportRequestDtos = await _supportRequestService.ListCustomerSupportRequest(customerId);
-                return Ok(supportRequestDtos);
+                var listCustomerSupportRequest = await _supportRequestService.ListCustomerSupportRequest(customerId);
+                return Ok(listCustomerSupportRequest);
             }
-            catch (Exception ex)
+
+            catch (BadRequestException ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -55,10 +55,10 @@ namespace DigitalBankApi.Controllers
         {
             try
             {
-                var supportRequest = await _supportRequestService.ListSupportRequest(supportRequestId);
-                return Ok(supportRequest);
+                var listSupportRequest = await _supportRequestService.ListSupportRequest(supportRequestId);
+                return Ok(listSupportRequest);
             }
-            catch (Exception ex)
+            catch (BadRequestException ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -76,7 +76,7 @@ namespace DigitalBankApi.Controllers
 
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(500, $"Internal Server Error: {ex.Message}");
             }
         }
 
@@ -85,8 +85,8 @@ namespace DigitalBankApi.Controllers
         {
             try
             {
-                var result = await _supportRequestService.AnswerRequest(id, answer);
-                return Ok(result);
+                var answeredRequest = await _supportRequestService.AnswerRequest(id, answer);
+                return Ok(answeredRequest);
             }
 
             catch (Exception ex)
@@ -94,7 +94,5 @@ namespace DigitalBankApi.Controllers
                 return StatusCode(500, $"Internal Server Error: {ex.Message}");
             }
         }
-
-
     }
 }

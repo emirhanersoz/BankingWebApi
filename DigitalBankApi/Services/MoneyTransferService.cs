@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using DigitalBankApi.Data;
 using DigitalBankApi.DTOs;
-using DigitalBankApi.Enums;
 using DigitalBankApi.Interfaces.IRepositories;
 using DigitalBankApi.Interfaces.IServices;
 using DigitalBankApi.Models;
@@ -19,9 +18,9 @@ namespace DigitalBankApi.Services
         private readonly AccountService _accountService;
 
         private static decimal dailyTransferLimit = 50000;
-        private static decimal transactionLimit = 10000;
+        private static decimal transactionLimit = 20000;
 
-        public MoneyTransferService(AdminContext context, ILogger<MoneyTransferService> logger, IMapper mapper, IValidator<MoneyTransferDto> validator, AccountService accountService)
+        public MoneyTransferService(AdminDbContext context, ILogger<MoneyTransferService> logger, IMapper mapper, IValidator<MoneyTransferDto> validator, AccountService accountService)
         {
             _unitOfWork = new UnitOfWork(context);
             _logger = logger;
@@ -42,13 +41,13 @@ namespace DigitalBankApi.Services
                         return false;
                     }
 
-                    if (!await _accountService.CheckAccountId(senderAccountId))
+                    if (!await _accountService.CheckAccount(senderAccountId))
                     {
                         _logger.LogError("Sender account not found.");
                         return false;
                     }
 
-                    if (!await _accountService.CheckAccountId(recipientAccountId))
+                    if (!await _accountService.CheckAccount(recipientAccountId))
                     {
                         _logger.LogError("Receiver account not found.");
                         return false;
@@ -99,13 +98,15 @@ namespace DigitalBankApi.Services
                     await _unitOfWork.CompleteAsync();
 
                     transaction.Commit();
+
                     return true;
                 }
 
                 catch (Exception ex)
                 {
-                    transaction.Rollback(); // Hata durumunda işlemi geri al
+                    transaction.Rollback();
                     _logger.LogError(ex, "An error occurred during the transfer.");
+
                     return false;
                 }
             }

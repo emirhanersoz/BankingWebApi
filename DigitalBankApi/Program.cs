@@ -16,7 +16,7 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<AdminContext>(options =>
+builder.Services.AddDbContext<AdminDbContext>(options =>
                                                 options.UseNpgsql(builder.Configuration.GetConnectionString("Default")), ServiceLifetime.Scoped);
 
 // Add services to the container.
@@ -34,6 +34,7 @@ builder.Services.AddAutoMapper(typeof(Users));
 builder.Services.AddControllers();
 
 builder.Services.AddTransient<AccountService>();
+builder.Services.AddTransient<AuthService>();
 builder.Services.AddTransient<CreditService>();
 builder.Services.AddTransient<CustomerService>();
 builder.Services.AddTransient<DepositWithdrawService>();
@@ -43,7 +44,9 @@ builder.Services.AddTransient<SupportRequestService>();
 
 builder.Services.AddSingleton<IValidator<AccountDto>, AccountDtoValidator>();
 builder.Services.AddSingleton<IValidator<AnswerRequestDto>, AnswerRequestDtoVAlidator>();
-builder.Services.AddSingleton<IValidator<BalanceUpdateDto>, BalanceUpdateDtoValidator>();
+builder.Services.AddSingleton<IValidator<UpdateBalanceDto>, UpdateBalanceDtoValidator>();
+builder.Services.AddSingleton<IValidator<UpdatePasswordDto>, UpdatePasswordDtoValidator>();
+builder.Services.AddSingleton<IValidator<UpdateRoleDto>, UpdateRoleDtoValidator>();
 builder.Services.AddSingleton<IValidator<CreditDto>, CreditDtoValidator>();
 builder.Services.AddSingleton<IValidator<CustomerDto>, CustomerDtoValidator>();
 builder.Services.AddSingleton<IValidator<DepositWithdrawDto>, DepositWithdrawDtoValidator>();

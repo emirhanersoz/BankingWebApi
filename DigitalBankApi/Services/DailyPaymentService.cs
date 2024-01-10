@@ -32,8 +32,9 @@ namespace DigitalBankApi.Services
         {
             _logger.LogInformation("Daily Payment Service is working.");
             _ = _payeeService.Payment(accountId, type);
-            _accountService.CheckAccountId(accountId);
-            _accountService.ResetTotalDailyTransferLimit();
+
+            _accountService.CheckAccount(accountId);
+            _accountService.ResetDailyTransferLimits();
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

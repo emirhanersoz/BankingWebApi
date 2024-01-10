@@ -3,7 +3,6 @@ using DigitalBankApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.SecurityTokenService;
-using System.Data;
 
 namespace DigitalBankApi.Controllers
 {
@@ -24,7 +23,7 @@ namespace DigitalBankApi.Controllers
         {
             try
             {
-                var createdAccount = await _accountService.CreateAccount(account);
+                var createdAccount = await _accountService.Create(account);
                 return Ok(createdAccount);
             }
 
@@ -34,28 +33,30 @@ namespace DigitalBankApi.Controllers
             }
         }
 
-        [HttpGet, Authorize(Roles = "Admin,Employee")]
-        [Route("list/{customerId}")]
+        [HttpGet, Authorize(Roles = "Admin,Employee,HighLevelUser,User")]
+        [Route("show-accounts-balance/{customerId}")]
         public async Task<IActionResult> List(int customerId)
         {
             try
             {
-                var accountDtos = await _accountService.ListAccounts(customerId);
-                return Ok(accountDtos);
+                var listAccount = await _accountService.List(customerId);
+                return Ok(listAccount);
             }
-            catch (Exception ex)
+
+            catch (BadRequestException ex)
             {
                 return BadRequest(ex.Message);
             }
         }
 
-        [HttpPut("{id}"), Authorize(Roles = "Admin,Employee")]
-        public async Task<IActionResult> BalanceUpdate(int id, [FromBody] BalanceUpdateDto updatedBalance)
+        [HttpPut, Authorize(Roles = "Admin,Employee")]
+        [Route("update-balance/{id}")]
+        public async Task<IActionResult> UpdateBalance(int id, [FromBody] UpdateBalanceDto updateBalance)
         {
             try
             {
-                var result = await _accountService.BalanceUpdate(id, updatedBalance);
-                return Ok(result);
+                var updatedBalance = await _accountService.UpdateBalance(id, updateBalance);
+                return Ok(updatedBalance);
             }
 
             catch (Exception ex)

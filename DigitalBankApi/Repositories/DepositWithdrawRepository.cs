@@ -6,11 +6,11 @@ namespace DigitalBankApi.Repositories
 {
     public class DepositWithdrawRepository : Repository<DepositWithdraws>, IDepositWithdrawRepository
     {
-        public DepositWithdrawRepository(AdminContext context) : base(context) { }
+        public DepositWithdrawRepository(AdminDbContext context) : base(context) { }
 
-        public AdminContext AdminContext
+        public AdminDbContext AdminContext
         {
-            get { return Context as AdminContext; }
+            get { return Context as AdminDbContext; }
         }
     }
 }

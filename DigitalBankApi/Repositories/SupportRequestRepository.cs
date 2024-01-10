@@ -6,11 +6,11 @@ namespace DigitalBankApi.Repositories
 {
     public class SupportRequestRepository : Repository<SupportRequests>, ISupportRequestRepository
     {
-        public SupportRequestRepository(AdminContext context) : base(context) { }
+        public SupportRequestRepository(AdminDbContext context) : base(context) { }
 
-        public AdminContext AdminContext
+        public AdminDbContext AdminContext
         {
-            get { return Context as AdminContext; }
+            get { return Context as AdminDbContext; }
         }
     }
 }

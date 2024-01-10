@@ -4,8 +4,8 @@ namespace DigitalBankApi.Interfaces.IRepositories
 {
     public interface IUnitOfWork : IDisposable
     {
-        IAccountCreditRepository AccountCredits { get; }
         IAccountRepository Accounts { get; }
+        IAccountCreditRepository AccountCredits { get; }
         ICreditRepository Credits { get; }
         ICustomersRepository Customers { get; }
         IDepositWithdrawRepository DepositWithdraws { get; }

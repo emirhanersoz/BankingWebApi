@@ -6,11 +6,11 @@ namespace DigitalBankApi.Repositories
 {
     public class AccountRepository : Repository<Accounts>, IAccountRepository
     {
-        public AccountRepository(AdminContext context) : base(context) { }
+        public AccountRepository(AdminDbContext context) : base(context) { }
 
-        public AdminContext AdminContext
+        public AdminDbContext AdminContext
         {
-            get { return Context as AdminContext; }
+            get { return Context as AdminDbContext; }
         }
     }
 }

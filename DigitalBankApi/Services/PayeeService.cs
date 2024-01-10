@@ -16,27 +16,27 @@ namespace DigitalBankApi.Services
         private readonly IMapper _mapper;
         private readonly IValidator<PayeeDto> _validator;
 
-        public PayeeService(AdminContext context, IMapper mapper, IValidator<PayeeDto> validator)
+        public PayeeService(AdminDbContext context, IMapper mapper, IValidator<PayeeDto> validator)
         {
             _unitOfWork = new UnitOfWork(context);
             _mapper = mapper;
             _validator = validator;
         }
 
-        public async Task<PayeeDto> Create(PayeeDto payeeDto)
+        public async Task<PayeeDto> Create(PayeeDto payee)
         {
-            var result = _validator.Validate(payeeDto);
+            var payeeValid = _validator.Validate(payee);
 
-            if (!result.IsValid)
+            if (!payeeValid.IsValid)
             {
-                var errorMessages = result.Errors
+                var errorMessages = payeeValid.Errors
                     .Select(error => $"{error.PropertyName}: {error.ErrorMessage}").ToList();
 
                 throw new Exception(string.Join(Environment.NewLine, errorMessages));
             }
 
 
-            var entity = _mapper.Map<PayeeDto, Payees>(payeeDto);
+            var entity = _mapper.Map<PayeeDto, Payees>(payee);
 
             SetPaymentDate(entity);
 
@@ -46,7 +46,7 @@ namespace DigitalBankApi.Services
             return _mapper.Map<PayeeDto>(entity);
         }
 
-        public async Task<List<PayeeDto>> ListAccountPayees(int accountId)
+        public async Task<List<PayeeDto>> ListPayeeForAccount(int accountId)
         {
             if (await _unitOfWork.Accounts.GetAsync(accountId) == null)
             {
@@ -150,6 +150,8 @@ namespace DigitalBankApi.Services
 
         public async Task<decimal> CalculateAllPayee(int accountId)
         {
+            decimal paymentsForAccount = 0;
+
             var account = await _unitOfWork.Accounts.GetAsync(accountId);
 
             if (account == null)
@@ -159,11 +161,10 @@ namespace DigitalBankApi.Services
 
             var payees = await _unitOfWork.Payees.GetAllAsync();
 
-            var paymentsForAccount = payees.Where(p => p.accountId == accountId).ToList();
+            paymentsForAccount = payees.Where(p => p.accountId == accountId
+                                && p.isPayment == false).Sum(p => p.Amount);
 
-            decimal totalBalance = paymentsForAccount.Sum(p => p.Amount);
-
-            return totalBalance;
+            return paymentsForAccount;
         }
     }
 }

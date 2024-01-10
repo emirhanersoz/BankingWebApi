@@ -1,8 +1,6 @@
 ﻿using DigitalBankApi.DTOs;
-using DigitalBankApi.Models;
 using DigitalBankApi.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.SecurityTokenService;
 
@@ -19,14 +17,14 @@ namespace DigitalBankApi.Controllers
             _creditService = creditService;
         }
 
-        [HttpPost, Authorize(Roles = "Admin,Empl")]
+        [HttpPost, Authorize(Roles = "Admin,Employee")]
         [Route("create")]
-        public async Task<IActionResult> Create([FromBody] CreditDto creditDto)
+        public async Task<IActionResult> Create([FromBody] CreditDto credit)
         {
             try
             {
-                var createdDto = await _creditService.Create(creditDto);
-                return Ok(createdDto);
+                var createdCredit = await _creditService.Create(credit);
+                return Ok(createdCredit);
             }
 
             catch (BadRequestException ex)
@@ -41,10 +39,11 @@ namespace DigitalBankApi.Controllers
         {
             try
             {
-                var listAllCredits = await _creditService.ListAllCredits();
+                var listAllCredits = await _creditService.ListAll();
                 return Ok(listAllCredits);
             }
-            catch (Exception ex)
+
+            catch (BadRequestException ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -52,14 +51,15 @@ namespace DigitalBankApi.Controllers
 
         [HttpGet, Authorize(Roles = "Admin,Employee")]
         [Route("list-account-credit")]
-        public async Task<IActionResult> ListAccountCredits(int accountId)
+        public async Task<IActionResult> ListCreditsForAccount(int accountId)
         {
             try
             {
-                var listAccountCredit = await _creditService.ListAccountCredits(accountId);
-                return Ok(listAccountCredit);
+                var listCreditsForAccount = await _creditService.ListCreditsForAccount(accountId);
+                return Ok(listCreditsForAccount);
             }
-            catch (Exception ex)
+
+            catch (BadRequestException ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -87,8 +87,8 @@ namespace DigitalBankApi.Controllers
         {
             try
             {
-                var getCredit = await _creditService.GetHighCredit(accountId, creditId);
-                return Ok(getCredit);
+                var getHighCredit = await _creditService.GetHighCredit(accountId, creditId);
+                return Ok(getHighCredit);
             }
 
             catch (BadRequestException ex)

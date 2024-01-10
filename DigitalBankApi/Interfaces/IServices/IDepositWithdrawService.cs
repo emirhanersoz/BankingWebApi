@@ -6,6 +6,8 @@ namespace DigitalBankApi.Interfaces.IServices
     {
         Task<bool> PerformTransaction(int accountId, decimal amount, TransactionType transactionType);
         Task<bool> PerformDeposit(int accountId, decimal depositAmount);
+        Task<bool> HighPerformDeposit(int accountId, decimal depositAmount);
         Task<bool> PerformWithdraw(int accountId, decimal withdrawAmount);
+        Task<bool> HighPerformWithdraw(int accountId, decimal withdrawAmount);
     }
 }

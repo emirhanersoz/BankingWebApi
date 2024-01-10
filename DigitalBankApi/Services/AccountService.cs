@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using DigitalBankApi.Data;
-using DigitalBankApi.Dtos;
 using DigitalBankApi.DTOs;
 using DigitalBankApi.Interfaces.IRepositories;
 using DigitalBankApi.Interfaces.IServices;
@@ -8,6 +7,7 @@ using DigitalBankApi.Models;
 using DigitalBankApi.Repositories;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Principal;
 
 namespace DigitalBankApi.Services
 {
@@ -16,65 +16,65 @@ namespace DigitalBankApi.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IValidator<AccountDto> _validator;
-        private readonly IValidator<BalanceUpdateDto> _validatorUpdateDto;
+        private readonly IValidator<UpdateBalanceDto> _updateBalanceValidator;
 
-        private const decimal MinimumBalanceAmount = 100;
+        private const decimal MinimumBalanceAmount = 1000;
 
-        public AccountService(AdminContext context, IMapper mapper, IValidator<AccountDto> validator, IValidator<BalanceUpdateDto> validatorUpdateDto)
+        public AccountService(AdminDbContext context, IMapper mapper, IValidator<AccountDto> validator, IValidator<UpdateBalanceDto> updateBalanceValidator)
         {
             _unitOfWork = new UnitOfWork(context);
             _mapper = mapper;
             _validator = validator;
-            _validatorUpdateDto = validatorUpdateDto;
+            _updateBalanceValidator = updateBalanceValidator;
         }
 
-        public async Task<AccountDto> CreateAccount(AccountDto accountDto)
+        public async Task<AccountDto> Create(AccountDto account)
         {
-            var result = _validator.Validate(accountDto);
+            var accountValid = _validator.Validate(account);
 
-            if (!result.IsValid)
+            if (!accountValid.IsValid)
             {
-                var errorMessages = result.Errors
+                var errorMessages = accountValid.Errors
                     .Select(error => $"{error.PropertyName}: {error.ErrorMessage}").ToList();
 
                 throw new Exception(string.Join(Environment.NewLine, errorMessages));
             }
 
-            if (_unitOfWork.Customers.GetAsync(accountDto.CustomerId) == null)
+            if (_unitOfWork.Customers.GetAsync(account.CustomerId) == null)
             {
                 throw new Exception("CustomerID not found.");
             }
 
-            if (accountDto.Balance < MinimumBalanceAmount)
+            if (account.Balance < MinimumBalanceAmount)
             {
                 throw new Exception("Balance should be greater than or equal to the minimum balance amount.");
             }
 
-            var entity = _mapper.Map<AccountDto, Accounts>(accountDto);
+            var entity = _mapper.Map<AccountDto, Accounts>(account);
 
             await _unitOfWork.Accounts.AddAsync(entity);
             await _unitOfWork.CompleteAsync();
 
-            return _mapper.Map<AccountDto>(accountDto);
+            return _mapper.Map<AccountDto>(account);
         }
 
-        public async Task<List<AccountDto>> ListAccounts(int customerId)
+        public async Task<List<AccountDto>> List(int customerId)
         {
-            var allAccounts = await _unitOfWork.Accounts.GetAllAsync();
+            var listAll = await _unitOfWork.Accounts.GetAllAsync();
 
-            var customerAccounts = allAccounts.Where(account => account.CustomerId == customerId).ToList();
+            var customerAccounts = listAll.Where(account => account.CustomerId == customerId).ToList();
 
             if (customerAccounts.Count == 0)
             {
                 throw new Exception("Customer account not found.");
             }
 
-            var accountDtos = _mapper.Map<List<AccountDto>>(customerAccounts);
+            var accountDto = _mapper.Map<List<AccountDto>>(customerAccounts);
 
-            return accountDtos;
+            return accountDto;
         }
 
-        public async Task<BalanceUpdateDto> BalanceUpdate(int id, [FromBody] BalanceUpdateDto updatedBalance)
+        public async Task<UpdateBalanceDto> UpdateBalance(int id, [FromBody] UpdateBalanceDto updatedBalance)
         {
             var checkingCustomer = await _unitOfWork.Customers.GetAsync(id);
 
@@ -92,11 +92,11 @@ namespace DigitalBankApi.Services
 
             _mapper.Map(updatedBalance, existingAccount);
 
-            var result = _validatorUpdateDto.Validate(updatedBalance);
+            var updateBalanceValid = _updateBalanceValidator.Validate(updatedBalance);
 
-            if (!result.IsValid)
+            if (!updateBalanceValid.IsValid)
             {
-                var errorMessages = result.Errors
+                var errorMessages = updateBalanceValid.Errors
                     .Select(error => $"{error.PropertyName}: {error.ErrorMessage}").ToList();
 
                 throw new Exception(string.Join(Environment.NewLine, errorMessages));
@@ -105,19 +105,19 @@ namespace DigitalBankApi.Services
             await _unitOfWork.Accounts.UpdateAsync(existingAccount);
             await _unitOfWork.CompleteAsync();
 
-            var updatedCustomerDto = _mapper.Map<BalanceUpdateDto>(existingAccount);
+            var updatedCustomerDto = _mapper.Map<UpdateBalanceDto>(existingAccount);
 
             return updatedCustomerDto;
         }
 
-        public async Task<bool> CheckAccountId(int accountId)
+        public async Task<bool> CheckAccount(int accountId)
         {
             var account = await _unitOfWork.Accounts.GetAsync(accountId);
 
             return account != null;
         }
 
-        public async void ResetTotalDailyTransferLimit()
+        public async void ResetDailyTransferLimits()
         {
             DateTime currentDate = DateTime.Now;
             DateTime nextDay = currentDate.AddDays(1);

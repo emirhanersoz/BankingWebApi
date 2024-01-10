@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using DigitalBankApi.Data;
 using DigitalBankApi.Dtos;
-using DigitalBankApi.DTOs;
 using DigitalBankApi.Interfaces.IRepositories;
 using DigitalBankApi.Interfaces.IServices;
 using DigitalBankApi.Models;
@@ -17,7 +16,7 @@ namespace DigitalBankApi.Services
         private readonly IMapper _mapper;
         private readonly IValidator<CustomerDto> _validator;
 
-        public CustomerService(AdminContext context, IMapper mapper, IValidator<CustomerDto> validator)
+        public CustomerService(AdminDbContext context, IMapper mapper, IValidator<CustomerDto> validator)
         {
             _unitOfWork = new UnitOfWork(context);
             _mapper = mapper;
@@ -26,17 +25,18 @@ namespace DigitalBankApi.Services
 
         public async Task<CustomerDto> Create([FromBody] CustomerDto customer, string userId)
         {
-            var result = _validator.Validate(customer);
+            var customerValid = _validator.Validate(customer);
 
-            if (!result.IsValid)
+            if (!customerValid.IsValid)
             {
-                var errorMessages = result.Errors
+                var errorMessages = customerValid.Errors
                     .Select(error => $"{error.PropertyName}: {error.ErrorMessage}").ToList();
 
                 throw new Exception(string.Join(Environment.NewLine, errorMessages));
             }
 
             var entity = _mapper.Map<CustomerDto, Customers>(customer);
+
             entity.UserId = userId;
 
             await _unitOfWork.Customers.AddAsync(entity);
@@ -56,11 +56,11 @@ namespace DigitalBankApi.Services
 
             _mapper.Map(updatedCustomer, existingCustomer);
 
-            var result = _validator.Validate(updatedCustomer);
+            var customerValid = _validator.Validate(updatedCustomer);
 
-            if (!result.IsValid)
+            if (!customerValid.IsValid)
             {
-                var errorMessages = result.Errors
+                var errorMessages = customerValid.Errors
                     .Select(error => $"{error.PropertyName}: {error.ErrorMessage}").ToList();
 
                 throw new Exception(string.Join(Environment.NewLine, errorMessages));

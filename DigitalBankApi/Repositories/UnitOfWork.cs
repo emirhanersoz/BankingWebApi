@@ -6,11 +6,12 @@ namespace DigitalBankApi.Repositories
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly AdminContext _context;
+        private readonly AdminDbContext _context;
 
-        public UnitOfWork(AdminContext context)
+        public UnitOfWork(AdminDbContext context)
         {
             _context = context;
+
             AccountCredits = new AccountCreditRepository(_context);
             Accounts = new AccountRepository(_context);
             Credits = new CreditRepository(_context);
@@ -33,7 +34,7 @@ namespace DigitalBankApi.Repositories
         public IPayeeRepository Payees { get; private set; }
         public ISupportRequestRepository SupportRequests { get; private set; }
         public IUserRepository Users { get; private set; }
-        public AdminContext Object { get; set; }
+        public AdminDbContext Object { get; set; }
 
         public async Task<int> CompleteAsync()
         {
@@ -41,20 +42,21 @@ namespace DigitalBankApi.Repositories
             {
                 return await _context.SaveChangesAsync();
             }
+
             catch (Exception ex)
             {
                 throw new Exception("Error saving changes to the database.", ex);
             }
         }
 
-        public void Dispose()
-        {
-            _context.Dispose();
-        }
-
         public IDbContextTransaction BeginTransaction()
         {
             return _context.Database.BeginTransaction();
+        }
+
+        public void Dispose()
+        {
+            _context.Dispose();
         }
     }
 }

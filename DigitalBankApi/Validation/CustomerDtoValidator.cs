@@ -1,7 +1,5 @@
 ﻿using DigitalBankApi.Dtos;
-using DigitalBankApi.DTOs;
 using FluentValidation;
-using System.Text.RegularExpressions;
 
 namespace DigitalBankApi.Validation
 {

@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace DigitalBankApi.Migrations
 {
-    [DbContext(typeof(AdminContext))]
+    [DbContext(typeof(AdminDbContext))]
     [Migration("20240107101953_UserUpdate")]
     partial class UserUpdate
     {

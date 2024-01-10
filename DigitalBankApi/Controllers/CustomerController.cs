@@ -1,15 +1,8 @@
-﻿using AutoMapper;
-using DigitalBankApi.Data;
-using DigitalBankApi.Dtos;
-using DigitalBankApi.Interfaces.IRepositories;
-using DigitalBankApi.Models;
-using DigitalBankApi.Repositories;
+﻿using DigitalBankApi.Dtos;
 using DigitalBankApi.Services;
-using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.SecurityTokenService;
-using System.Security.Principal;
 
 namespace DigitalBankApi.Controllers
 {
@@ -17,16 +10,10 @@ namespace DigitalBankApi.Controllers
     [ApiController]
     public class CustomerController : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
-        private readonly IValidator<CustomerDto> _validator;
         private readonly CustomerService _customerService;
 
-        public CustomerController(AdminContext context, IMapper mapper, IValidator<CustomerDto> validator, CustomerService customerService)
+        public CustomerController(CustomerService customerService)
         {
-            _unitOfWork = new UnitOfWork(context);
-            _mapper = mapper;
-            _validator = validator;
             _customerService = customerService;
         }
 

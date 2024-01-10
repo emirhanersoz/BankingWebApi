@@ -6,9 +6,6 @@ using DigitalBankApi.Interfaces.IServices;
 using DigitalBankApi.Models;
 using DigitalBankApi.Repositories;
 using FluentValidation;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.SecurityTokenService;
 
 namespace DigitalBankApi.Services
 {
@@ -21,7 +18,7 @@ namespace DigitalBankApi.Services
 
         private static decimal highCreditAmount = 100000;
 
-        public CreditService(AdminContext context, IMapper mapper, IValidator<CreditDto> validator, PayeeService payeeService)
+        public CreditService(AdminDbContext context, IMapper mapper, IValidator<CreditDto> validator, PayeeService payeeService)
         {
             _unitOfWork = new UnitOfWork(context);
             _mapper = mapper;
@@ -29,19 +26,19 @@ namespace DigitalBankApi.Services
             _payeeService = payeeService;
         }
 
-        public async Task<CreditDto> Create(CreditDto creditDto)
+        public async Task<CreditDto> Create(CreditDto credit)
         {
-            var result = _validator.Validate(creditDto);
+            var creditValid = _validator.Validate(credit);
 
-            if (!result.IsValid)
+            if (!creditValid.IsValid)
             {
-                var errorMessages = result.Errors
+                var errorMessages = creditValid.Errors
                     .Select(error => $"{error.PropertyName}: {error.ErrorMessage}").ToList();
 
                 throw new Exception(string.Join(Environment.NewLine, errorMessages));
             }
 
-            var entity = _mapper.Map<CreditDto, Credits>(creditDto);
+            var entity = _mapper.Map<CreditDto, Credits>(credit);
 
             await _unitOfWork.Credits.AddAsync(entity);
             await _unitOfWork.CompleteAsync();
@@ -49,48 +46,21 @@ namespace DigitalBankApi.Services
             return _mapper.Map<CreditDto>(entity);
         }
 
-        public async Task<decimal> CalculateBankScore(int accountId)
+        public async Task<List<CreditDto>> ListAll()
         {
-            var account = await _unitOfWork.Accounts.GetAsync(accountId);
+            var listAll = await _unitOfWork.Credits.GetAllAsync();
 
-            if (account != null)
-            {
-                decimal sumAllPayee = await _payeeService.CalculateAllPayee(accountId);
-
-                decimal bankScore = account.Balance / 2 - sumAllPayee;
-
-                return bankScore;
-            }
-
-            else
-                throw new Exception("Calculate exception");
+            return _mapper.Map<List<CreditDto>>(listAll);
         }
 
-        public async Task<bool> isLoanCredit(int accountId, int creditId)
-        {
-            var credit = await _unitOfWork.Credits.GetAsync(creditId);
-            var account = await _unitOfWork.Accounts.GetAsync(accountId);
-
-            account.BankScore = await CalculateBankScore(accountId);
-
-            if (account.BankScore >= credit.MontlyPayment)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        public async Task<List<CreditDto>> ListAllCredits()
-        {
-            var listAllCredits = await _unitOfWork.Credits.GetAllAsync();
-
-            return _mapper.Map<List<CreditDto>>(listAllCredits);
-        }
-
-        public async Task<List<CreditDto>> ListAccountCredits(int accountId)
+        public async Task<List<CreditDto>> ListCreditsForAccount(int accountId)
         {
             var allAccountCredits = await _unitOfWork.AccountCredits.GetAllAsync();
+
+            if (!allAccountCredits.Where(p => p.AccountId == accountId).Any())
+            {
+                throw new ArgumentNullException("This account has no credit");
+            }
 
             var creditDtos = new List<CreditDto>();
 
@@ -102,21 +72,6 @@ namespace DigitalBankApi.Services
             }
 
             return creditDtos;
-        }
-
-        public async Task<AccountCreditDto> GetHighCredit(int accountId, int creditId)
-        {
-            bool isCreditApproved = await isLoanCredit(accountId, creditId);
-
-            if (isCreditApproved)
-            {
-                return await ProcessCredit(accountId, creditId);
-            }
-            else
-            {
-                var entity = await _unitOfWork.Accounts.GetAsync(accountId);
-                throw new Exception("Credit not approved. You can take out a credit with a monthly payment of " + entity.BankScore);
-            }
         }
 
         public async Task<AccountCreditDto> GetCredit(int accountId, int creditId)
@@ -133,6 +88,22 @@ namespace DigitalBankApi.Services
                     throw new Exception("You can't withdraw large amounts of credit");
                 }
 
+                return await ProcessCredit(accountId, creditId);
+            }
+
+            else
+            {
+                var entity = await _unitOfWork.Accounts.GetAsync(accountId);
+                throw new Exception("Credit not approved. You can take out a credit with a monthly payment of " + entity.BankScore);
+            }
+        }
+
+        public async Task<AccountCreditDto> GetHighCredit(int accountId, int creditId)
+        {
+            bool isCreditApproved = await isLoanCredit(accountId, creditId);
+
+            if (isCreditApproved)
+            {
                 return await ProcessCredit(accountId, creditId);
             }
             else
@@ -154,6 +125,69 @@ namespace DigitalBankApi.Services
             await _unitOfWork.CompleteAsync();
 
             return _mapper.Map<AccountCreditDto>(accountCredit);
+        }
+
+        private async Task<bool> isLoanCredit(int accountId, int creditId)
+        {
+            var credit = await _unitOfWork.Credits.GetAsync(creditId);
+            var account = await _unitOfWork.Accounts.GetAsync(accountId);
+
+            account.BankScore = await CalculateBankScore(accountId);
+
+            if (account.BankScore >= credit.MontlyPayment)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private async Task<decimal> CalculateBankScore(int accountId)
+        {
+            var account = await _unitOfWork.Accounts.GetAsync(accountId);
+
+            if (account != null)
+            {
+                decimal sumAllPayees = await _payeeService.CalculateAllPayee(accountId);
+
+                decimal sumAllCredits = await SumAllCreditMonthlyPayment(accountId);
+
+                decimal bankScore = (account.Balance / 2) - (sumAllPayees + sumAllCredits);
+
+                return bankScore;
+            }
+
+            else
+                throw new Exception("Calculate exception");
+        }
+
+        private async Task<decimal> SumAllCreditMonthlyPayment(int accountId)
+        {
+            decimal totalMonthlyPayments = 0;
+
+            if (await HasCreditForAccount(accountId))
+            {
+                var allCredit = await ListCreditsForAccount(accountId);
+
+                foreach (var credit in allCredit)
+                {
+                    totalMonthlyPayments += credit.MontlyPayment;
+                }
+            }
+
+            return totalMonthlyPayments;
+        }
+
+        private async Task<bool> HasCreditForAccount(int accountId)
+        {
+            var allAccountCredits = await _unitOfWork.AccountCredits.GetAllAsync();
+
+            if (!allAccountCredits.Where(p => p.AccountId == accountId).Any())
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

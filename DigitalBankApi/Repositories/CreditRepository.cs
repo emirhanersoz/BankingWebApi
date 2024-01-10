@@ -6,11 +6,11 @@ namespace DigitalBankApi.Repositories
 {
     public class CreditRepository : Repository<Credits>, ICreditRepository
     {
-        public CreditRepository(AdminContext context) : base(context) { }
+        public CreditRepository(AdminDbContext context) : base(context) { }
 
-        public AdminContext AdminContext
+        public AdminDbContext AdminContext
         {
-            get { return Context as AdminContext; }
+            get { return Context as AdminDbContext; }
         }
     }
 }

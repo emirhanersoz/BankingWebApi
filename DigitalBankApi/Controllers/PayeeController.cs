@@ -2,7 +2,6 @@
 using DigitalBankApi.Enums;
 using DigitalBankApi.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.SecurityTokenService;
 
@@ -21,11 +20,11 @@ namespace DigitalBankApi.Controllers
 
         [HttpPost]
         [Route("create"), Authorize(Roles = "Admin,Employee,HighLevelUser,User")]
-        public async Task<IActionResult> Create([FromBody] PayeeDto payeeDto)
+        public async Task<IActionResult> Create([FromBody] PayeeDto payee)
         {
             try
             {
-                var createdPayee = await _payeeService.Create(payeeDto);
+                var createdPayee = await _payeeService.Create(payee);
                 return Ok(createdPayee);
             }
 
@@ -41,11 +40,11 @@ namespace DigitalBankApi.Controllers
         {
             try
             {
-                var payeeDto = await _payeeService.ListAccountPayees(accountId);
-                return Ok(payeeDto);
+                var listAccountPayees = await _payeeService.ListPayeeForAccount(accountId);
+                return Ok(listAccountPayees);
             }
 
-            catch (Exception ex)
+            catch (BadRequestException ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -57,8 +56,8 @@ namespace DigitalBankApi.Controllers
         {
             try
             {
-                var payee = await _payeeService.Payment(accountId, payeeType);
-                return Ok(payee);
+                var payment = await _payeeService.Payment(accountId, payeeType);
+                return Ok(payment);
             }
 
             catch (Exception ex)
@@ -73,8 +72,8 @@ namespace DigitalBankApi.Controllers
         {
             try
             {
-                var payee = await _payeeService.Delete(accountId, payeeType);
-                return Ok(payee);
+                var deletedPayee = await _payeeService.Delete(accountId, payeeType);
+                return Ok(deletedPayee);
             }
 
             catch (Exception ex)

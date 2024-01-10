@@ -1,6 +1,5 @@
 ﻿using DigitalBankApi.Interfaces.IRepositories;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace DigitalBankApi.Repositories
@@ -15,6 +14,11 @@ namespace DigitalBankApi.Repositories
         }
 
         public async Task<TEntity> GetAsync(int id)
+        {
+            return await Context.Set<TEntity>().FindAsync(id);
+        }
+
+        public async Task<TEntity> GetAsync(string id)
         {
             return await Context.Set<TEntity>().FindAsync(id);
         }
@@ -38,6 +42,7 @@ namespace DigitalBankApi.Repositories
         {
             await Context.Set<TEntity>().AddAsync(entity);
         }
+
         public async Task UpdateAsync(TEntity entity)
         {
             Context.Entry(entity).State = EntityState.Modified;

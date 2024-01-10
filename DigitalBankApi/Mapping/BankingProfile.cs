@@ -12,7 +12,7 @@ namespace DigitalBankApi.Mapping
             CreateMap<AccountCreditDto, AccountCredits>();
             CreateMap<AnswerRequestDto, SupportRequests>();
             CreateMap<AccountDto, Accounts>();
-            CreateMap<BalanceUpdateDto, Accounts>();
+            CreateMap<UpdateBalanceDto, Accounts>();
             CreateMap<CreditDto, Credits>();
             CreateMap<CustomerDto, Customers>();
             CreateMap<DepositWithdrawDto, DepositWithdraws>();
@@ -21,10 +21,12 @@ namespace DigitalBankApi.Mapping
             CreateMap<PayeeDto, Payees>();
             CreateMap<SupportRequestDto, SupportRequests>();
             CreateMap<UserDto, Users>();
+            CreateMap<UpdatePasswordDto, Users>();
+            CreateMap<UpdateRoleDto, Users>();
 
             CreateMap<AccountCredits, AccountCreditDto>();
             CreateMap<Accounts, AccountDto>();
-            CreateMap<Accounts, BalanceUpdateDto>();
+            CreateMap<Accounts, UpdateBalanceDto>();
             CreateMap<Credits, CreditDto>();
             CreateMap<Customers, CustomerDto>();
             CreateMap<DepositWithdraws, DepositWithdrawDto>();
@@ -34,6 +36,8 @@ namespace DigitalBankApi.Mapping
             CreateMap<SupportRequests, AnswerRequestDto>();
             CreateMap<SupportRequests, SupportRequestDto>();
             CreateMap<Users, UserDto>();
+            CreateMap<Users, UpdatePasswordDto>();
+            CreateMap<Users, UpdateRoleDto>();
         }
     }
 }

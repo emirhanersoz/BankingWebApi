@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using DigitalBankApi.Data;
-using DigitalBankApi.Dtos;
 using DigitalBankApi.DTOs;
 using DigitalBankApi.Enums;
 using DigitalBankApi.Interfaces.IRepositories;
@@ -19,7 +18,9 @@ namespace DigitalBankApi.Services
 
         private static readonly SemaphoreSlim transactionLock = new SemaphoreSlim(1, 1);
 
-        public DepositWithdrawService(AdminContext context, IMapper mapper, IValidator<DepositWithdrawDto> validator)
+        private static decimal transferLimit = 10000; 
+
+        public DepositWithdrawService(AdminDbContext context, IMapper mapper, IValidator<DepositWithdrawDto> validator)
         {
             _unitOfWork = new UnitOfWork(context);
             _mapper = mapper;
@@ -99,10 +100,26 @@ namespace DigitalBankApi.Services
 
         public async Task<bool> PerformDeposit(int accountId, decimal depositAmount)
         {
+            if (depositAmount < transferLimit)
+                return await PerformTransaction(accountId, depositAmount, TransactionType.Deposit);
+
+            throw new Exception("Daily deposit limit exceeded");
+        }
+
+        public async Task<bool> HighPerformDeposit(int accountId, decimal depositAmount)
+        {
             return await PerformTransaction(accountId, depositAmount, TransactionType.Deposit);
         }
 
         public async Task<bool> PerformWithdraw(int accountId, decimal withdrawAmount)
+        {
+            if (withdrawAmount < transferLimit)
+                return await PerformTransaction(accountId, withdrawAmount, TransactionType.Withdraw);
+
+            throw new Exception("Daily withdraw limit exceeded");
+        }
+
+        public async Task<bool> HighPerformWithdraw(int accountId, decimal withdrawAmount)
         {
             return await PerformTransaction(accountId, withdrawAmount, TransactionType.Withdraw);
         }

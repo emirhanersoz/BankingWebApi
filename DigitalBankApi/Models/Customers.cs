@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-
-namespace DigitalBankApi.Models
+﻿namespace DigitalBankApi.Models
 {
     public partial class Customers
     {
@@ -23,6 +20,7 @@ namespace DigitalBankApi.Models
         public string PostCode { get; set; }
 
         public virtual Users User { get; set; }
+
         public virtual ICollection<Accounts> Accounts { get; set; } = new HashSet<Accounts>();
         public virtual ICollection<SupportRequests> SupportRequests { get; set; } = new HashSet<SupportRequests>();
     }

@@ -1,6 +1,4 @@
-﻿using DigitalBankApi.Enums;
-
-namespace DigitalBankApi.DTOs
+﻿namespace DigitalBankApi.DTOs
 {
     public class UserDto
     {

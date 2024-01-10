@@ -6,11 +6,11 @@ namespace DigitalBankApi.Repositories
 {
     public class PayeeRepository : Repository<Payees>, IPayeeRepository
     {
-        public PayeeRepository(AdminContext context) : base(context) { }
+        public PayeeRepository(AdminDbContext context) : base(context) { }
 
-        public AdminContext AdminContext
+        public AdminDbContext AdminContext
         {
-            get { return Context as AdminContext; }
+            get { return Context as AdminDbContext; }
         }
     }
 }

@@ -1,7 +1,4 @@
-﻿using DigitalBankApi.Models;
-using DigitalBankApi.Services;
-
-namespace DigitalBankApi.Interfaces.IServices
+﻿namespace DigitalBankApi.Interfaces.IServices
 {
     public interface IDailyPaymentService
     {

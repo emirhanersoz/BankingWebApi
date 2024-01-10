@@ -1,6 +1,4 @@
-﻿using DigitalBankApi.Models;
-
-namespace DigitalBankApi.DTOs
+﻿namespace DigitalBankApi.DTOs
 {
     public class LoginDto
     {
