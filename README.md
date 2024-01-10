@@ -33,7 +33,8 @@ Proje kullanımı için aşağıdaki adımları takip edebilirsiniz:
 1. Proje dosyalarını bilgisayarınıza indirin.
 2. Gerekli bağımlılıkları yüklemek için terminal veya komut istemcisinde `dotnet restore` komutunu çalıştırın.
 3. Database bağlantısı için terminal veya komut istemcisinde 'add-migration "CreateDb" komutunu daha sonra 'update-database' komutunu çalıştırın.
-4. Proje ana dizininde `dotnet run` komutu ile uygulamayı başlatın.
+4. Projeyi çalıştırdıktan sonra açılan Swagger sayfasında role kısmına "Admin" yazarak kayıt olun. (Admin rolü tüm fonksiyonları çalıştırabilecektir.)
+5. Login yaptıktan sonra oluşan HashKey'i koplayın ve sayfanın sağ üstündeki kilit işaretine tıklayarak başına bearer "HashKey" imizi girerek tüm fonksiyonlara erişim sağlayın.
 
 ## Testler
 
